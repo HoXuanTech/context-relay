@@ -23,7 +23,7 @@ PreCompact fires
       ↓
 Read latest handoff file (written by you or /handoff)
       ↓
-Open new Terminal/iTerm2 window
+Open new terminal window (iTerm2/Terminal on macOS, gnome-terminal/konsole/xterm on Linux)
       ↓
 New Claude session starts with full handoff context
       ↓
@@ -34,16 +34,17 @@ Work continues
 
 ## Requirements
 
-- macOS (Linux support planned)
+- macOS or Linux
 - [Claude Code](https://claude.ai/code) ≥ v2.1.144
 - Python 3 (for install script)
+- Linux only: a supported terminal (`gnome-terminal`, `konsole`, `xfce4-terminal`, `tilix`, or `xterm`)
 
 ---
 
 ## Install
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/context-relay
+git clone https://github.com/HoXuanTech/context-relay
 cd context-relay
 bash install.sh
 ```

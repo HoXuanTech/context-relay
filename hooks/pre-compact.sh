@@ -7,6 +7,7 @@ set -euo pipefail
 
 TIMESTAMP=$(date +"%Y-%m-%d_%H-%M")
 DATE_HUMAN=$(date +"%Y-%m-%d %H:%M")
+OS=$(uname -s)
 
 # --- Parse hook input (JSON from stdin) ---
 HOOK_INPUT=$(cat)
@@ -56,7 +57,7 @@ if [ -z "$LATEST_HANDOFF" ]; then
 EOF
 fi
 
-# --- Write launcher script (avoids quoting issues in osascript) ---
+# --- Write launcher script (avoids quoting issues in terminal commands) ---
 LAUNCHER=$(mktemp /tmp/context-relay-XXXXX.sh)
 chmod +x "$LAUNCHER"
 
@@ -69,12 +70,20 @@ rm -f "$LAUNCHER"
 LAUNCHER_EOF
 
 # --- Desktop notification ---
-osascript -e 'display notification "Opening new window to continue work" with title "Context Relay" subtitle "Auto-compact triggered"' 2>/dev/null || true
+case "$OS" in
+  Darwin)
+    osascript -e 'display notification "Opening new window to continue work" with title "Context Relay" subtitle "Auto-compact triggered"' 2>/dev/null || true
+    ;;
+  Linux)
+    notify-send "Context Relay" "Opening new window to continue work" 2>/dev/null || true
+    ;;
+esac
 
 # --- Open new window ---
-# Try iTerm2 first, fall back to Terminal.app
-if osascript -e 'tell application "System Events" to (name of processes) contains "iTerm2"' 2>/dev/null | grep -q "true"; then
-    osascript << APPLESCRIPT
+case "$OS" in
+  Darwin)
+    if osascript -e 'tell application "System Events" to (name of processes) contains "iTerm2"' 2>/dev/null | grep -q "true"; then
+      osascript << APPLESCRIPT
 tell application "iTerm2"
     create window with default profile
     tell current session of current window
@@ -82,8 +91,30 @@ tell application "iTerm2"
     end tell
 end tell
 APPLESCRIPT
-else
-    osascript -e "tell application \"Terminal\" to do script \"bash $LAUNCHER\""
-fi
+    else
+      osascript -e "tell application \"Terminal\" to do script \"bash $LAUNCHER\""
+    fi
+    ;;
+  Linux)
+    if command -v gnome-terminal &>/dev/null; then
+      gnome-terminal -- bash -c "bash $LAUNCHER; exec bash"
+    elif command -v konsole &>/dev/null; then
+      konsole -e bash -c "bash $LAUNCHER; exec bash"
+    elif command -v xfce4-terminal &>/dev/null; then
+      xfce4-terminal -e "bash -c 'bash $LAUNCHER; exec bash'"
+    elif command -v tilix &>/dev/null; then
+      tilix -e "bash -c 'bash $LAUNCHER; exec bash'"
+    elif command -v xterm &>/dev/null; then
+      xterm -e "bash -c 'bash $LAUNCHER; exec bash'" &
+    else
+      echo "Context Relay: no supported terminal found. Run manually:" >&2
+      echo "  claude --append-system-prompt \"\$(cat $LATEST_HANDOFF)\"" >&2
+    fi
+    ;;
+  *)
+    echo "Context Relay: unsupported OS ($OS). Run manually:" >&2
+    echo "  claude --append-system-prompt \"\$(cat $LATEST_HANDOFF)\"" >&2
+    ;;
+esac
 
 echo "Context Relay: new window opened with handoff from $LATEST_HANDOFF"

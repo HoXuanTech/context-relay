@@ -23,7 +23,7 @@ Context Relay 安裝兩個東西：
       ↓
 讀取最新 handoff 檔案（你或 /handoff 寫的）
       ↓
-開新 Terminal / iTerm2 視窗
+開新終端機視窗（macOS: iTerm2/Terminal；Linux: gnome-terminal/konsole/xterm）
       ↓
 新 Claude session 帶入完整 handoff 上下文啟動
       ↓
@@ -34,16 +34,17 @@ Context Relay 安裝兩個東西：
 
 ## 需求
 
-- macOS（Linux 支援規劃中）
+- macOS 或 Linux
 - [Claude Code](https://claude.ai/code) ≥ v2.1.144
 - Python 3（安裝腳本用）
+- Linux 限定：需有支援的終端機（`gnome-terminal`、`konsole`、`xfce4-terminal`、`tilix` 或 `xterm`）
 
 ---
 
 ## 安裝
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/context-relay
+git clone https://github.com/HoXuanTech/context-relay
 cd context-relay
 bash install.sh
 ```
