@@ -24,23 +24,33 @@ Use this exact format:
 ## Current Goal
 [1-2 sentences: what this session is trying to accomplish]
 
+## Key Decisions
+- [decision → reason]  ← non-obvious choices only; include exact syntax/API if relevant
+- [decision → reason]
+
 ## In Progress
-[Only incomplete tasks. Completed tasks are deleted entirely — do not move them elsewhere.]
+- [item — status; add causal note if relevant, e.g. "tests didn't catch this → found late"]
+
+## Completed Detail
+- [item — one-line structural note: why it was easy/hard, what made it different]
 
 ## Safety Rules
-[Session-specific constraints, e.g. "don't restart the bot", "don't delete X directory"]
+- [constraint + consequence, or "→ see Key Decisions: [which entry]"]
 
 ## Last Actions
-[Last 2-3 significant actions taken this session]
+- [last 2-3 significant actions]
 
 ## Next Actions
-[Exact next steps, specific enough to execute immediately without re-reading the full history]
+- [exact next step, specific enough to execute immediately]
+
+## Recon Notes
+- [how key facts were discovered: grep command, error message, test that failed]
 
 ## Background
 → read [path-to-project-memory-or-context-file] for full background
 ```
 
-Keep the handoff under 50 lines. Do not inline architecture docs, full file contents, or long histories — use `→ read [path]` pointers instead.
+Keep the handoff under 55 lines. Omit any section that has nothing to record. Do not inline architecture docs, full file contents, or long histories — use `→ read [path]` pointers instead.
 
 Do not include: `.env` contents, OAuth tokens, credentials, SQLite data, or raw secrets.
 
