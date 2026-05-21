@@ -1,117 +1,169 @@
 # Context Relay
 
-**在 Claude Code 壓縮上下文之前，自動保存工作狀態並在新視窗繼續工作。**
+> **直接告訴你的 Claude Code：**
+> `幫我安裝 https://github.com/HoXuanTech/context-relay`
+
+**讓 Claude Code 在壓縮上下文前自動換手，不中斷工作流。**
 
 [English](README.md)
 
 ---
 
-## 問題
+## 問題：自動壓縮會清掉你的工作狀態
 
-Claude Code 在長工程 session 中會自動壓縮上下文（context compaction）。壓縮後 Claude 會忘記正在做什麼——你必須手動重新說明背景、貼上 prompt、重建狀態。每次都要。
+Claude Code 的 context window 約 200k tokens。長時間的 session——跨 10+ 個
+檔案重構、追蹤複雜 bug、多步驟遷移——很容易填滿。填滿後系統自動壓縮，把整段
+對話濃縮成摘要繼續跑。
 
-## 運作方式
+問題是壓縮後消失的東西。
 
-Context Relay 安裝兩個東西：
+**壓縮後 Claude 記得的：**
+> 「你在重構一個 Next.js 專案。」
 
-1. **`PreCompact` hook** — 在每次自動壓縮前自動觸發。開新的 Claude Code 視窗，並帶入最新的換手記憶（handoff），讓工作無縫繼續。
+**壓縮後 Claude 忘掉的：**
+- 為什麼 `authMiddleware` 不能做成 HOC（你花了 20 分鐘搞清楚的 edge runtime 限制）
+- `/api/user` 是故意跳過的，要等 `session.ts` 改完才能動
+- 7 個修改中的哪 3 個還是做到一半的狀態
+- 你設定的禁忌：「不要動 `/api/auth/callback`，那個在 production」
 
-2. **`/handoff` skill** — 隨時可呼叫，主動保存當前狀態並開新視窗。在長 session 中定期使用。
+**重建成本：** 5–15 分鐘，靠你自己的記憶。疲勞時重建錯了，Claude 會去動你
+說不能動的東西，或重新提你早就排除的方案。
+
+工程師現在的應對方式：把 checkpoint 筆記貼進對話框、開新分頁從頭解釋、在
+程式碼裡留 `// TODO: Claude 忘了這個`。全是人力補洞。
+
+---
+
+## 解法：壓縮前自動換手
+
+Context Relay 在 Claude Code 裡安裝一個 `PreCompact` hook。每次自動壓縮前：
+
+1. 讀取你最新的 handoff 檔（你工作狀態的 <50 行快照）
+2. 自動開一個新的終端機視窗
+3. 帶著那份快照啟動新的 Claude Code session
+
+新 session 直接知道從哪裡接。你不用解釋任何事。
 
 ```
-自動壓縮即將發生
-      ↓
-讀取最新 handoff 檔案（你或 /handoff 寫的）
-      ↓
-開新終端機視窗（macOS: iTerm2/Terminal；Linux: gnome-terminal/konsole/xterm）
-      ↓
-新 Claude session 帶入完整 handoff 上下文啟動
-      ↓
-工作繼續
+沒有 Context Relay
+─────────────────────────────────────────────
+[自動壓縮觸發]
+→ Claude 忘掉所有具體狀態
+→ 你花 5–15 分鐘靠記憶重建 context
+→ Claude 可能重新碰你說不能動的東西
+
+有 Context Relay
+─────────────────────────────────────────────
+[自動壓縮觸發]
+→ 桌面通知：「Opening new window to continue work」
+→ 新終端機視窗自動彈出
+→ 新 Claude session 帶著完整 handoff 啟動
+→ 從上次停下的地方繼續，什麼都不用說
 ```
+
+---
+
+## 安裝
+
+**方法一 — 讓 Claude Code 幫你裝：**
+
+在 Claude Code 裡說：
+> 幫我安裝 https://github.com/HoXuanTech/context-relay
+
+**方法二 — 手動：**
+
+```bash
+git clone https://github.com/HoXuanTech/context-relay ~/context-relay
+cd ~/context-relay
+bash install.sh
+```
+
+---
+
+## 使用方式
+
+### 1. 在 session 中定期執行 `/handoff`
+
+自動換手的品質完全取決於你最後一次 `/handoff` 的新鮮度。建議時機：
+- 完成一個有意義的工作單元後
+- 切換任務前
+- 長 session 中每 15–20 分鐘
+
+Handoff 檔案存放位置：
+- `<project-root>/handoff/`（git 專案）
+- `~/.claude/handoff/<project-name>/`（其他目錄）
+
+### 2. 其他什麼都不用做
+
+自動壓縮觸發時，Context Relay 全程處理。新視窗自動開，handoff 自動帶入。
+
+---
+
+## Handoff 檔案長這樣
+
+```markdown
+# Handoff - my-project - 2026-05-21 03:00
+
+## Current Goal
+重構 authMiddleware，讓它支援 edge runtime，不破壞現有 session。
+
+## In Progress
+- [ ] session.ts — 做到一半，需要加 refreshToken 邏輯
+- [ ] /api/user — 故意跳過，等 session.ts 完成再動
+
+## Safety Rules
+- 不能動 /api/auth/callback — 在 production
+- 不能用 Node.js API（edge runtime 限制）
+
+## Last Actions
+- 確認 authMiddleware 不能做成 HOC（edge runtime）
+- 改完 middleware.ts、headers.ts、tokens.ts，測試通過
+- 故意跳過 /api/user
+
+## Next Actions
+- 在 session.ts 加 refreshToken 邏輯
+- 跑：npm test -- --filter=session
+- 然後回來處理 /api/user
+
+## Background
+→ read PROJECT_CONTEXT.md 看完整架構
+```
+
+已完成的任務直接刪掉，不是搬移或封存。Handoff 是「現在」的快照，不是歷史
+紀錄。保持在 50 行以內。
 
 ---
 
 ## 需求
 
 - macOS 或 Linux
-- [Claude Code](https://claude.ai/code) ≥ v2.1.144
-- Python 3（安裝腳本用）
-- Linux 限定：需有支援的終端機（`gnome-terminal`、`konsole`、`xfce4-terminal`、`tilix` 或 `xterm`）
+- Claude Code ≥ v2.1.144
+- Python 3
+- Linux 限定：需有 `gnome-terminal`、`konsole`、`xfce4-terminal`、`tilix` 或 `xterm` 其中之一
 
 ---
 
-## 安裝
+## 已知限制
 
-```bash
-git clone https://github.com/HoXuanTech/context-relay
-cd context-relay
-bash install.sh
-```
-
-安裝後立即生效，不需要重啟。
-
----
-
-## 使用方式
-
-### 自動（不需任何操作）
-Context Relay 在每次自動壓縮前自動觸發。新視窗會帶入你最後一次的 handoff 開啟。
-
-### 手動：`/handoff`
-在 Claude Code 中隨時輸入 `/handoff`：
-- 將當前工作狀態保存到 handoff 檔案
-- 開新視窗並載入該狀態
-
-建議定期主動使用——handoff 越完整，自動換手的品質越好。
-
----
-
-## Handoff 檔案
-
-儲存位置：
-- `<project-root>/handoff/`（git 專案）
-- `~/.claude/handoff/<project-name>/`（其他目錄）
-
-格式：
-```markdown
-# Handoff - [專案名] - YYYY-MM-DD HH:MM
-
-## Current Goal      ← 這個 session 在做什麼（1-2 句）
-## In Progress       ← 只列未完成任務，完成的直接刪掉
-## Safety Rules      ← 這個 session 的特殊禁忌
-## Last Actions      ← 最近 2-3 個有意義的動作
-## Next Actions      ← 精確的下一步，要能直接執行
-## Background        ← 指向 project memory 的路徑
-```
-
-**核心設計原則：** 已完成的任務從 handoff 直接刪除，不是搬移或封存。Handoff 是「現在」的快照，不是歷史紀錄。保持在 50 行以內。
-
----
-
-## 不會記錄的內容
-
-Handoff 檔案永遠不包含：
-- `.env` 內容或 API key
-- OAuth token 或 credentials
-- 資料庫內容
-- 已完成的任務（直接刪除）
+- 如果你很久沒執行 `/handoff`，自動換手只能帶入空的 placeholder——hook 無法讀取你的思路
+- 新視窗是獨立的 Claude Code session，不繼承原視窗的 tool permissions 或環境變數
+- 深層架構細節應放在專案檔案裡，用 `→ read [路徑]` 指向
 
 ---
 
 ## 卸載
 
 ```bash
-# 移除 hook 和 skill
 rm ~/.claude/hooks/context-relay-pre-compact.sh
 rm -rf ~/.claude/skills/handoff/
-
-# 手動編輯 ~/.claude/settings.json
-# 刪除 PreCompact hook 那一段
+# 手動編輯 ~/.claude/settings.json，刪除 PreCompact 那段
 ```
 
 ---
 
-## License
+MIT License
 
-MIT
+---
+
+> **直接告訴你的 Claude Code：**
+> `幫我安裝 https://github.com/HoXuanTech/context-relay`
