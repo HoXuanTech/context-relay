@@ -68,6 +68,42 @@ WITH Context Relay
 
 ---
 
+## Does It Actually Help?
+
+We ran a controlled study comparing auto-compaction against Context Relay's handoff format. A realistic 2-hour engineering session was used as the test scenario, with 15 recall questions across safety rules, decision rationale, and work state.
+
+**Single compaction cycle:**
+
+| | Auto-compact | Handoff |
+|---|:---:|:---:|
+| Recall accuracy | 60% | 67% |
+
+A modest +7% difference. Auto-compaction is not bad.
+
+**What happens after multiple cycles** (each cycle = context fills up again):
+
+```
+Recall accuracy
+ 67% │  ──────────────────────────────────────  Handoff (constant)
+ 60% │  ●  Round 1
+     │
+ 30% │              ●  Round 3
+ 27% │                             ●  Round 6
+  0% └──────────────────────────────────────────
+      1 cycle       3 cycles      6 cycles
+      (~1 hr)       (~3-4 hrs)    (~6+ hrs)
+```
+
+The handoff advantage is not in the first hour. It's in hour three.
+
+Auto-compaction reaches a "compaction floor" by Round 3 — the summary has been compressed so many times that only broad facts remain. Safety rule *reasons* disappear. Specific next steps collapse into "open TODOs". Causal chains ("tests didn't cover this, so the bug hid for 20 minutes") are gone entirely.
+
+The handoff, loaded fresh into each new session, stays at 67% regardless of how many times compaction has occurred.
+
+→ [Full research methodology and data](research/STUDY.md)
+
+---
+
 ## Install
 
 **Option 1 — Let Claude Code do it:**
@@ -114,30 +150,39 @@ opens with your handoff loaded.
 ## Current Goal
 Refactoring authMiddleware to support edge runtime without breaking sessions.
 
+## Key Decisions
+- authMiddleware can't be HOC → edge runtime bans dynamic imports; confirmed after 20 min investigation
+- /api/user skipped intentionally → depends on session.ts refreshToken, touch after that's done
+
 ## In Progress
-- [ ] session.ts — half-done, needs refreshToken logic
-- [ ] /api/user — intentionally skipped, touch after session.ts
+- session.ts — half-done, needs refreshToken logic
+- /api/user — blocked on session.ts (see Key Decisions)
+
+## Completed Detail
+- middleware.ts, headers.ts, tokens.ts — all rewritten, tests passing, no edge runtime issues
 
 ## Safety Rules
-- Do NOT touch /api/auth/callback — it's live
-- No Node.js APIs (edge runtime constraint)
+- Do NOT touch /api/auth/callback — it's live in production
+- No Node.js APIs anywhere in middleware (edge runtime constraint)
 
 ## Last Actions
-- Confirmed authMiddleware can't be HOC (edge runtime)
+- Confirmed HOC approach is blocked (edge runtime)
 - Rewrote middleware.ts, headers.ts, tokens.ts — tests passing
-- Skipped /api/user intentionally
 
 ## Next Actions
 - Add refreshToken logic to session.ts
 - Run: npm test -- --filter=session
 - Then return to /api/user
 
+## Recon Notes
+- Edge runtime constraint confirmed via: next build error "Dynamic Code Evaluation not allowed"
+
 ## Background
 → read PROJECT_CONTEXT.md for full architecture
 ```
 
 Completed tasks are deleted, not archived. A handoff is a snapshot of
-*right now*, not a history log. Keep it under 50 lines.
+*right now*, not a history log. Keep it under 55 lines.
 
 ---
 
