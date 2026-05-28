@@ -1,0 +1,649 @@
+{
+  "a_weighted": 247,
+  "b_weighted": 224,
+  "weight_total": 300,
+  "a_composite_pct": 82.3,
+  "b_composite_pct": 74.7,
+  "t6": {
+    "A": 2,
+    "B": 1
+  },
+  "by_test_point": {
+    "T1": {
+      "A": 18,
+      "B": 17
+    },
+    "T2": {
+      "A": 19,
+      "B": 16
+    },
+    "T3": {
+      "A": 17,
+      "B": 15
+    },
+    "T4": {
+      "A": 15,
+      "B": 15
+    },
+    "T5": {
+      "A": 16,
+      "B": 14
+    },
+    "T6": {
+      "A": 2,
+      "B": 1
+    }
+  },
+  "raw": {
+    "A": {
+      "T1": {
+        "group": "A",
+        "tp": "T1",
+        "total": 18,
+        "max": 20,
+        "rows": [
+          {
+            "q": "Q1",
+            "score": 2,
+            "answer": ""
+          },
+          {
+            "q": "Q2",
+            "score": 2,
+            "answer": ""
+          },
+          {
+            "q": "Q3",
+            "score": 2,
+            "answer": ""
+          },
+          {
+            "q": "Q4",
+            "score": 2,
+            "answer": ""
+          },
+          {
+            "q": "Q5",
+            "score": 2,
+            "answer": ""
+          },
+          {
+            "q": "Q6",
+            "score": 2,
+            "answer": ""
+          },
+          {
+            "q": "Q7",
+            "score": 2,
+            "answer": ""
+          },
+          {
+            "q": "Q8",
+            "score": 2,
+            "answer": ""
+          },
+          {
+            "q": "Q9",
+            "score": 0,
+            "answer": ""
+          },
+          {
+            "q": "Q10",
+            "score": 2,
+            "answer": ""
+          }
+        ]
+      },
+      "T2": {
+        "group": "A",
+        "tp": "T2",
+        "total": 19,
+        "max": 20,
+        "rows": [
+          {
+            "q": "Q11",
+            "score": 2,
+            "answer": ""
+          },
+          {
+            "q": "Q12",
+            "score": 2,
+            "answer": ""
+          },
+          {
+            "q": "Q13",
+            "score": 1,
+            "answer": ""
+          },
+          {
+            "q": "Q14",
+            "score": 2,
+            "answer": ""
+          },
+          {
+            "q": "Q15",
+            "score": 2,
+            "answer": ""
+          },
+          {
+            "q": "Q16",
+            "score": 2,
+            "answer": ""
+          },
+          {
+            "q": "Q17",
+            "score": 2,
+            "answer": ""
+          },
+          {
+            "q": "Q18",
+            "score": 2,
+            "answer": ""
+          },
+          {
+            "q": "Q19",
+            "score": 2,
+            "answer": ""
+          },
+          {
+            "q": "Q20",
+            "score": 2,
+            "answer": ""
+          }
+        ]
+      },
+      "T3": {
+        "group": "A",
+        "tp": "T3",
+        "total": 17,
+        "max": 20,
+        "rows": [
+          {
+            "q": "Q21",
+            "score": 1,
+            "answer": ""
+          },
+          {
+            "q": "Q22",
+            "score": 0,
+            "answer": ""
+          },
+          {
+            "q": "Q23",
+            "score": 2,
+            "answer": ""
+          },
+          {
+            "q": "Q24",
+            "score": 2,
+            "answer": ""
+          },
+          {
+            "q": "Q25",
+            "score": 2,
+            "answer": ""
+          },
+          {
+            "q": "Q26",
+            "score": 2,
+            "answer": ""
+          },
+          {
+            "q": "Q27",
+            "score": 2,
+            "answer": ""
+          },
+          {
+            "q": "Q28",
+            "score": 2,
+            "answer": ""
+          },
+          {
+            "q": "Q29",
+            "score": 2,
+            "answer": ""
+          },
+          {
+            "q": "Q30",
+            "score": 2,
+            "answer": ""
+          }
+        ]
+      },
+      "T4": {
+        "group": "A",
+        "tp": "T4",
+        "total": 15,
+        "max": 20,
+        "rows": [
+          {
+            "q": "Q31",
+            "score": 0,
+            "answer": ""
+          },
+          {
+            "q": "Q32",
+            "score": 2,
+            "answer": ""
+          },
+          {
+            "q": "Q33",
+            "score": 2,
+            "answer": ""
+          },
+          {
+            "q": "Q34",
+            "score": 2,
+            "answer": ""
+          },
+          {
+            "q": "Q35",
+            "score": 0,
+            "answer": ""
+          },
+          {
+            "q": "Q36",
+            "score": 2,
+            "answer": ""
+          },
+          {
+            "q": "Q37",
+            "score": 2,
+            "answer": ""
+          },
+          {
+            "q": "Q38",
+            "score": 2,
+            "answer": ""
+          },
+          {
+            "q": "Q39",
+            "score": 1,
+            "answer": ""
+          },
+          {
+            "q": "Q40",
+            "score": 2,
+            "answer": ""
+          }
+        ]
+      },
+      "T5": {
+        "group": "A",
+        "tp": "T5",
+        "total": 16,
+        "max": 20,
+        "rows": [
+          {
+            "q": "Q41",
+            "score": 0,
+            "answer": ""
+          },
+          {
+            "q": "Q42",
+            "score": 2,
+            "answer": ""
+          },
+          {
+            "q": "Q43",
+            "score": 2,
+            "answer": ""
+          },
+          {
+            "q": "Q44",
+            "score": 2,
+            "answer": ""
+          },
+          {
+            "q": "Q45",
+            "score": 2,
+            "answer": ""
+          },
+          {
+            "q": "Q46",
+            "score": 2,
+            "answer": ""
+          },
+          {
+            "q": "Q47",
+            "score": 2,
+            "answer": ""
+          },
+          {
+            "q": "Q48",
+            "score": 2,
+            "answer": ""
+          },
+          {
+            "q": "Q49",
+            "score": 0,
+            "answer": ""
+          },
+          {
+            "q": "Q50",
+            "score": 2,
+            "answer": ""
+          }
+        ]
+      },
+      "T6": {
+        "group": "A",
+        "tp": "T6",
+        "total": 2,
+        "max": 2,
+        "rows": [
+          {
+            "q": "Q51",
+            "score": 2,
+            "answer": ""
+          }
+        ]
+      }
+    },
+    "B": {
+      "T1": {
+        "group": "B",
+        "tp": "T1",
+        "total": 17,
+        "max": 20,
+        "rows": [
+          {
+            "q": "Q1",
+            "score": 2,
+            "answer": ""
+          },
+          {
+            "q": "Q2",
+            "score": 2,
+            "answer": ""
+          },
+          {
+            "q": "Q3",
+            "score": 2,
+            "answer": ""
+          },
+          {
+            "q": "Q4",
+            "score": 2,
+            "answer": ""
+          },
+          {
+            "q": "Q5",
+            "score": 1,
+            "answer": ""
+          },
+          {
+            "q": "Q6",
+            "score": 2,
+            "answer": ""
+          },
+          {
+            "q": "Q7",
+            "score": 2,
+            "answer": ""
+          },
+          {
+            "q": "Q8",
+            "score": 2,
+            "answer": ""
+          },
+          {
+            "q": "Q9",
+            "score": 0,
+            "answer": ""
+          },
+          {
+            "q": "Q10",
+            "score": 2,
+            "answer": ""
+          }
+        ]
+      },
+      "T2": {
+        "group": "B",
+        "tp": "T2",
+        "total": 16,
+        "max": 20,
+        "rows": [
+          {
+            "q": "Q11",
+            "score": 1,
+            "answer": ""
+          },
+          {
+            "q": "Q12",
+            "score": 0,
+            "answer": ""
+          },
+          {
+            "q": "Q13",
+            "score": 2,
+            "answer": ""
+          },
+          {
+            "q": "Q14",
+            "score": 2,
+            "answer": ""
+          },
+          {
+            "q": "Q15",
+            "score": 2,
+            "answer": ""
+          },
+          {
+            "q": "Q16",
+            "score": 2,
+            "answer": ""
+          },
+          {
+            "q": "Q17",
+            "score": 2,
+            "answer": ""
+          },
+          {
+            "q": "Q18",
+            "score": 2,
+            "answer": ""
+          },
+          {
+            "q": "Q19",
+            "score": 1,
+            "answer": ""
+          },
+          {
+            "q": "Q20",
+            "score": 2,
+            "answer": ""
+          }
+        ]
+      },
+      "T3": {
+        "group": "B",
+        "tp": "T3",
+        "total": 15,
+        "max": 20,
+        "rows": [
+          {
+            "q": "Q21",
+            "score": 1,
+            "answer": "Two carry-forward constraints from S2 apply to the detail view built in S3:\n\n1. **`STORAGE_KEYS.FAVORITES = 'recipe-favorites'`** (Rule #1) — the exac"
+          },
+          {
+            "q": "Q22",
+            "score": 0,
+            "answer": "NOT IN CONTEXT"
+          },
+          {
+            "q": "Q23",
+            "score": 2,
+            "answer": "The native `<dialog>` element was avoided due to three specific issues:\n\n1. **`::backdrop` styling is inconsistent across browsers**\n2. **`returnFocus"
+          },
+          {
+            "q": "Q24",
+            "score": 2,
+            "answer": "The modal traps focus by looping Tab/Shift+Tab within the modal's focusable elements, with focus initially placed on the close button when the modal o"
+          },
+          {
+            "q": "Q25",
+            "score": 2,
+            "answer": "`parseQuantity` splits fractions on `/` — so `\"1/2\"` becomes `0.5`. After scaling, floating-point rounding is applied via `Math.round(v * 100) / 100` "
+          },
+          {
+            "q": "Q26",
+            "score": 1,
+            "answer": "The serving scaler defaults to **4 servings**. Quantities are scaled using a `parseQuantity` function that:\n\n- Handles fractions by splitting on `/` ("
+          },
+          {
+            "q": "Q27",
+            "score": 2,
+            "answer": "Yes. From the **Safety Rules** section:\n\n> All modals must use div overlay with `role=\"dialog\"`, `aria-modal=\"true\"`, `aria-labelledby`, and manual fo"
+          },
+          {
+            "q": "Q28",
+            "score": 2,
+            "answer": "The modal div uses these ARIA attributes:\n\n- `role=\"dialog\"`\n- `aria-modal=\"true\"`\n- `aria-labelledby` → pointing to the modal heading"
+          },
+          {
+            "q": "Q29",
+            "score": 2,
+            "answer": "Non-numeric measures like \"to taste\" and \"as needed\" are returned unchanged — they are not scaled."
+          },
+          {
+            "q": "Q30",
+            "score": 1,
+            "answer": "At the end of S3, the following is complete:\n\n**Recipe detail modal with serving scaler**, specifically:\n\n- Div overlay modal with `role=\"dialog\"`, `a"
+          }
+        ]
+      },
+      "T4": {
+        "group": "B",
+        "tp": "T4",
+        "total": 15,
+        "max": 20,
+        "rows": [
+          {
+            "q": "Q31",
+            "score": 0,
+            "answer": "NOT IN CONTEXT"
+          },
+          {
+            "q": "Q32",
+            "score": 2,
+            "answer": "When both a category and an area are selected, **AND logic** is applied — only recipes matching **both** the category and the area are shown. Recipes "
+          },
+          {
+            "q": "Q33",
+            "score": 2,
+            "answer": "Search history is stored in `localStorage` with the key `'recipe-search-history'` (constant `STORAGE_KEYS.SEARCH_HISTORY`).\n\nManagement rules:\n- **Max"
+          },
+          {
+            "q": "Q34",
+            "score": 2,
+            "answer": "**Roving tabindex** is a keyboard navigation pattern where only one element in a group has `tabindex=\"0\"` at a time; all others have `tabindex=\"-1\"`. "
+          },
+          {
+            "q": "Q35",
+            "score": 2,
+            "answer": "AND logic was chosen because the user wanted to **narrow results** — e.g., \"Italian desserts\" should mean Italian **AND** Dessert, not either. OR woul"
+          },
+          {
+            "q": "Q36",
+            "score": 2,
+            "answer": "Yes. `STORAGE_KEYS.SEARCH_HISTORY = 'recipe-search-history'` is locked in constants.js under the same \"never change\" principle as `STORAGE_KEYS.FAVORI"
+          },
+          {
+            "q": "Q37",
+            "score": 0,
+            "answer": "NOT IN CONTEXT"
+          },
+          {
+            "q": "Q38",
+            "score": 2,
+            "answer": "Category chips come from `categories.php` and area chips come from `list.php?a=list`."
+          },
+          {
+            "q": "Q39",
+            "score": 2,
+            "answer": "`display: none` is used to preserve the DOM — cards are hidden but not removed, so no re-fetch is needed when filters change, and each card's `data-re"
+          },
+          {
+            "q": "Q40",
+            "score": 1,
+            "answer": "Based on the context, the complete feature set at the end of S4:\n\n**From this session (S4 additions):**\n- Category filter chips (sourced from `categor"
+          }
+        ]
+      },
+      "T5": {
+        "group": "B",
+        "tp": "T5",
+        "total": 14,
+        "max": 20,
+        "rows": [
+          {
+            "q": "Q41",
+            "score": 0,
+            "answer": "The carry-forward rule from S4 that applies to S5's custom recipe feature is:\n\n**Safety Rule #1 & #2**: `STORAGE_KEYS.FAVORITES = 'recipe-favorites'` "
+          },
+          {
+            "q": "Q42",
+            "score": 2,
+            "answer": "Based on the context, `getAnyRecipeById` doesn't need to be **extended** — it was already implemented this session with the custom recipe routing buil"
+          },
+          {
+            "q": "Q43",
+            "score": 2,
+            "answer": "**Safety Rule #3:** `CUSTOM_RECIPE_PREFIX = 'custom-'` — all custom recipe IDs must start with this prefix.\n\n**Problem it prevents:** TheMealDB IDs ar"
+          },
+          {
+            "q": "Q44",
+            "score": 1,
+            "answer": "Image URL validation uses a hidden `<img>` element: the URL is set as the `src`, and if the `onload` event fires the URL is accepted and stored; if `o"
+          },
+          {
+            "q": "Q45",
+            "score": 2,
+            "answer": "**Export:** `JSON.stringify` → `Blob` → `URL.createObjectURL` → anchor click download\n\n**Import:** file input → `FileReader.readAsText` → `JSON.parse`"
+          },
+          {
+            "q": "Q46",
+            "score": 2,
+            "answer": "`createRecipeCard` uses `textContent` (not `innerHTML`) for user-provided fields — title, description, ingredient display fields — to **prevent XSS** "
+          },
+          {
+            "q": "Q47",
+            "score": 2,
+            "answer": "The star rating uses `<input type=\"radio\">` elements inside a container with `role=\"radiogroup\"`, with values 1–5. Native keyboard behavior (arrow key"
+          },
+          {
+            "q": "Q48",
+            "score": 2,
+            "answer": "The custom recipe form uses a hidden ID field to distinguish modes:\n\n- **Add mode**: hidden ID field is empty → generates a new ID as `'custom-' + Dat"
+          },
+          {
+            "q": "Q49",
+            "score": 0,
+            "answer": "NOT IN CONTEXT"
+          },
+          {
+            "q": "Q50",
+            "score": 1,
+            "answer": "Based on the context, here is the complete feature set completed at the end of S5:\n\n**Storage & Routing**\n- `STORAGE_KEYS.CUSTOM_RECIPES = 'recipe-cus"
+          }
+        ]
+      },
+      "T6": {
+        "group": "B",
+        "tp": "T6",
+        "total": 1,
+        "max": 2,
+        "rows": [
+          {
+            "q": "Q51",
+            "score": 1,
+            "answer": "**Persistence layers (3):**\n1. **Memory** — `recipeCache`, `currentFilters`, active view; cleared on tab close\n2. **localStorage** — three locked keys"
+          }
+        ]
+      }
+    }
+  }
+}

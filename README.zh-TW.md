@@ -1,112 +1,108 @@
-# Context Relay
+# context-relay
 
-> **直接告訴你的 Claude Code：**
-> `幫我安裝 https://github.com/HoXuanTech/context-relay`
-
-**讓 Claude Code 在壓縮上下文前自動換手，不中斷工作流。**
+> 一個給 Claude Code 用的 `/handoff` skill，讓你在漫長 session 中撐住。
 
 [English](README.md)
 
 ---
 
-## 問題：自動壓縮會清掉你的工作狀態
+## 一句話說清楚問題
 
-Claude Code 的 context window 約 200k tokens。長時間的 session——跨 10+ 個
-檔案重構、追蹤複雜 bug、多步驟遷移——很容易填滿。填滿後系統自動壓縮，把整段
-對話濃縮成摘要繼續跑。
+Claude Code 有記憶上限。session 太長時，它會自動壓縮所有對話——壓縮後，最重要的細節往往不見了。
 
-問題是壓縮後消失的東西。
+不是全部消失。大方向還在。但消失的是：
 
-**壓縮後 Claude 記得的：**
-> 「你在重構一個 Next.js 專案。」
+- 你鎖定的精確常數（`STORAGE_KEYS.FAVORITES = 'recipe-favorites'`——改掉這個，所有使用者的收藏資料就孤兒了）
+- 你排除某個做法的原因（`永遠不要用原生 <dialog>`——因為 Chrome 和 Firefox 的 `::backdrop` 行為不一樣）
+- 真正的下一步是什麼（不是「繼續重構」——是「在動 /api/user 之前，先把 refreshToken 邏輯加進 session.ts」）
 
-**壓縮後 Claude 忘掉的：**
-- 為什麼 `authMiddleware` 不能做成 HOC（你花了 20 分鐘搞清楚的 edge runtime 限制）
-- `/api/user` 是故意跳過的，要等 `session.ts` 改完才能動
-- 7 個修改中的哪 3 個還是做到一半的狀態
-- 你設定的禁忌：「不要動 `/api/auth/callback`，那個在 production」
-
-**重建成本：** 5–15 分鐘，靠你自己的記憶。疲勞時重建錯了，Claude 會去動你
-說不能動的東西，或重新提你早就排除的方案。
-
-工程師現在的應對方式：把 checkpoint 筆記貼進對話框、開新分頁從頭解釋、在
-程式碼裡留 `// TODO: Claude 忘了這個`。全是人力補洞。
+幾次壓縮後，Claude 開始重新提你早就排除的方案。它忘記你花了 20 分鐘確認的限制。session 開始漂移。
 
 ---
 
-## 解法：壓縮前自動換手
+## context-relay 做什麼
 
-Context Relay 在 Claude Code 裡安裝一個 `PreCompact` hook。每次自動壓縮前：
+**它不對抗自動壓縮。它和自動壓縮搭檔工作。**
 
-1. 讀取你最新的 handoff 檔（你工作狀態的 <50 行快照）
-2. 自動開一個新的終端機視窗
-3. 帶著那份快照啟動新的 Claude Code session
+Claude Code 的自動壓縮很擅長保留廣度——你在做什麼、有哪些檔案、整體進度大概如何。context-relay 處理它在多次壓縮後最容易丟失的三類東西：
 
-新 session 直接知道從哪裡接。你不用解釋任何事。
+1. **永久常數** — 精確的字串、key、數值，絕對不能改
+2. **禁區＋原因** — 不只是「不要做 X」，還有*為什麼*，包括你已經評估並排除的替代方案
+3. **具體下一步** — 具體到可以直接執行，不是模糊的方向
+
+兩者合作：
 
 ```
-沒有 Context Relay
-─────────────────────────────────────────────
-[自動壓縮觸發]
-→ Claude 忘掉所有具體狀態
-→ 你花 5–15 分鐘靠記憶重建 context
-→ Claude 可能重新碰你說不能動的東西
+沒有 context-relay
+──────────────────────────────────────────
+[3 次壓縮後]
+Claude：「有沒有考慮用原生 <dialog> 做 modal？」
+你：「...我們討論過這個了」
+────────────────────────────────────────── 5–15 分鐘重建 context
 
-有 Context Relay
-─────────────────────────────────────────────
-[自動壓縮觸發]
-→ 桌面通知：「Opening new window to continue work」
-→ 新終端機視窗自動彈出
-→ 新 Claude session 帶著完整 handoff 啟動
-→ 從上次停下的地方繼續，什麼都不用說
+有 context-relay
+──────────────────────────────────────────
+[3 次壓縮後]
+自動壓縮：保留整體專案狀態
+Handoff：永遠不要用原生 <dialog> — ::backdrop 在 Chrome/Firefox 行為不一致
+Claude 從上次確切停下的地方繼續
 ```
 
 ---
 
-## 這個工具真的有用嗎？
+## 運作方式
 
-我們做了一個對照實驗，用一個模擬的 2 小時工程 session 作為測試情境，設計 15 道召回題，比較 auto-compaction 和 Context Relay handoff 的準確率。
+### 1. 在 session 中寫 handoff
 
-**單次壓縮：**
+隨時執行 `/handoff`。Claude 會寫一份短小的結構化檔案（目標 35 行以內）到你的專案：
 
-| | Auto-compaction | Handoff |
-|---|:---:|:---:|
-| 召回準確率 | 60% | 67% |
+```markdown
+# Handoff - my-project - 2026-05-28 14:30
 
-差距不大，+7%。Auto-compaction 本身並不差。
+## 現在做到哪
+正在重構 auth middleware 讓它支援 edge runtime。modal 系統已完成。
 
-**多次壓縮之後**（每次 = context 再次填滿觸發壓縮）：
+## 永久常數 & 禁區
+- STORAGE_KEYS.FAVORITES = 'recipe-favorites' — 改了這個，所有使用者收藏資料就孤兒了
+- NEVER 原生 <dialog> — ::backdrop 在 Chrome/Firefox 表現不同，returnFocus 也有差
+- NEVER 在 middleware 裡用 Node.js API — edge runtime 硬限制，build error 已確認
 
+## 接下來要做什麼
+- 在 session.ts 加 refreshToken 邏輯
+- 跑：npm test -- --filter=session
+- /api/user 等 session.ts 完成前不要動
+
+## Background
+→ read PROJECT_CONTEXT.md 看完整架構
 ```
-召回準確率
- 67% │  ──────────────────────────────────────  Handoff（恆定）
- 60% │  ●  第 1 輪
-     │
- 30% │              ●  第 3 輪
- 27% │                             ●  第 6 輪
-  0% └──────────────────────────────────────────
-      1 輪           3 輪           6 輪
-     （約 1 小時）  （約 3-4 小時）（約 6+ 小時）
-```
 
-這個工具的價值不在第一個小時，在第三個小時。
+### 2. 自動壓縮觸發時，hook 自動處理
 
-Auto-compaction 在第 3 輪左右就到達「壓縮底限」——摘要已被壓縮太多次，只剩大方向的事實。Safety Rule 的原因消失、具體下一步變成「待處理 TODO」、因果鏈（「測試沒覆蓋才讓 bug 藏了 20 分鐘」）徹底消失。
+每次壓縮前，`PreCompact` hook 會：
 
-Handoff 每次都以全新 snapshot 載入新 session，準確率維持在 67%，不因壓縮輪數累積而衰減。
+- 把你最新的 handoff 存到 `~/.claude/HANDOFF_CURRENT.md`（symlink 指向有時間戳的原始檔——歷史永遠不會被覆蓋）
+- 寫一個小通知檔案：`~/.claude/COMPACTION_NOTICE.md`
+- 顯示桌面通知
+- **不會開新視窗**——自動壓縮正常繼續
 
-→ [完整研究方法與數據](research/STUDY.md)
+### 3. 壓縮後的 session 讀取 handoff
+
+壓縮完成後，Claude 的第一個回應由 `CLAUDE.md` 裡的規則觸發：
+
+> 如果 `~/.claude/COMPACTION_NOTICE.md` 存在：讀取它，讀取 handoff，向使用者確認狀態，刪除通知檔案。
+
+壓縮後的 session 兩者都拿到了：自動壓縮的廣度覆蓋 + handoff 的精準細節。通知檔案接著被刪除，不會在下次訊息重複觸發。
 
 ---
 
 ## 安裝
 
-**方法一 — 讓 Claude Code 幫你裝：**
+**透過 Claude Code（最簡單）：**
 
-在 Claude Code 裡說：
+打開 Claude Code 說：
 > 幫我安裝 https://github.com/HoXuanTech/context-relay
 
-**方法二 — 手動：**
+**手動：**
 
 ```bash
 git clone https://github.com/HoXuanTech/context-relay ~/context-relay
@@ -118,81 +114,54 @@ bash install.sh
 
 ## 使用方式
 
-### 1. 在 session 中定期執行 `/handoff`
+**在漫長 session 中定期執行 `/handoff`：**
+- 完成一個有意義的工作段落後
+- 切換到 codebase 的不同部分時
+- 任何讓你覺得「如果 session 突然重置我會很慘」的時候
 
-自動換手的品質完全取決於你最後一次 `/handoff` 的新鮮度。建議時機：
-- 完成一個有意義的工作單元後
-- 切換任務前
-- 長 session 中每 15–20 分鐘
+就這樣。hook 自動處理其他一切。
 
-Handoff 檔案存放位置：
-- `<project-root>/handoff/`（git 專案）
-- `~/.claude/handoff/<project-name>/`（其他目錄）
+**Handoff 檔案存放位置：**
+- `<project-root>/handoff/` — git 專案
+- `~/.claude/handoff/<project-name>/` — 其他情況
 
-### 2. 其他什麼都不用做
-
-自動壓縮觸發時，Context Relay 全程處理。新視窗自動開，handoff 自動帶入。
+歷史完整保留。每次 `/handoff` 都建立一個新的有時間戳檔案。`HANDOFF_CURRENT.md` 是 symlink 指向最新版——沒有東西會被覆蓋。
 
 ---
 
-## Handoff 檔案長這樣
+## Handoff 寫什麼（以及不要寫什麼）
 
-```markdown
-# Handoff - my-project - 2026-05-21 03:00
+**要寫：**
+- 永久常數，含精確值和改了會壞什麼
+- 用禁止語氣寫的規則：`NEVER [X] — [具體原因，含被排除的替代方案]`
+- 最重要的一個下一步，具體到可以直接執行
 
-## Current Goal
-重構 authMiddleware，讓它支援 edge runtime，不破壞現有 session。
+**不要寫：**
+- 這個 session 你做了什麼（自動壓縮會處理）
+- `.env` 內容、credentials、機密
+- 完整檔案內容或長架構文件——用 `→ read [路徑]` 代替
 
-## Key Decisions
-- authMiddleware 不能做成 HOC → edge runtime 禁止動態 import，花 20 分鐘確認
-- /api/user 故意跳過 → 依賴 session.ts 的 refreshToken，等那邊完成再動
+**Handoff 不是歷史紀錄。它是精準補充。**
 
-## In Progress
-- session.ts — 做到一半，需要加 refreshToken 邏輯
-- /api/user — 等 session.ts（見 Key Decisions）
+---
 
-## Completed Detail
-- middleware.ts、headers.ts、tokens.ts — 全部改完，測試通過，無 edge runtime 問題
+## 研究背景
 
-## Safety Rules
-- 不能動 /api/auth/callback — 在 production
-- middleware 裡不能用任何 Node.js API（edge runtime 限制）
+我們做了五項研究，比較自動壓縮和 handoff 格式在不同內容類型下的表現（工程 session、學術文本、真實 vibe coding 對話）。核心發現：
 
-## Last Actions
-- 確認 HOC 方案被 edge runtime 封死
-- 改完 middleware.ts、headers.ts、tokens.ts，測試通過
+> 自動壓縮和 handoff 各有擅長。自動壓縮保留廣度。Handoff 保留精準度——精確常數、排除原因、以及工作方向的動能。兩者合用，勝過任何一方單獨使用。
 
-## Next Actions
-- 在 session.ts 加 refreshToken 邏輯
-- 跑：npm test -- --filter=session
-- 然後回來處理 /api/user
+沒有 handoff 的失敗模式不是災難性的失憶——是漸進式的漂移。Claude 慢慢忘記決策背後的*為什麼*，開始重新提出已被排除的方案，並失去具體的下一步行動。這在每次壓縮後都會加重。
 
-## Recon Notes
-- Edge runtime 限制確認方式：next build 報錯「Dynamic Code Evaluation not allowed」
-
-## Background
-→ read PROJECT_CONTEXT.md 看完整架構
-```
-
-已完成的任務直接刪掉，不是搬移或封存。Handoff 是「現在」的快照，不是歷史
-紀錄。保持在 55 行以內。
+→ [完整研究資料與方法論](research/RESEARCH_SUMMARY.md)
 
 ---
 
 ## 需求
 
-- macOS 或 Linux
+- macOS（Linux 部分支援——桌面通知不可用，其餘正常）
 - Claude Code ≥ v2.1.144
 - Python 3
-- Linux 限定：需有 `gnome-terminal`、`konsole`、`xfce4-terminal`、`tilix` 或 `xterm` 其中之一
-
----
-
-## 已知限制
-
-- 如果你很久沒執行 `/handoff`，自動換手只能帶入空的 placeholder——hook 無法讀取你的思路
-- 新視窗是獨立的 Claude Code session，不繼承原視窗的 tool permissions 或環境變數
-- 深層架構細節應放在專案檔案裡，用 `→ read [路徑]` 指向
 
 ---
 
@@ -201,14 +170,12 @@ Handoff 檔案存放位置：
 ```bash
 rm ~/.claude/hooks/context-relay-pre-compact.sh
 rm -rf ~/.claude/skills/handoff/
-# 手動編輯 ~/.claude/settings.json，刪除 PreCompact 那段
+rm -f ~/.claude/HANDOFF_CURRENT.md
+rm -f ~/.claude/COMPACTION_NOTICE.md
+# 手動從 ~/.claude/settings.json 移除 PreCompact 那段
+# 手動從 ~/.claude/CLAUDE.md 移除 Context Relay 那段
 ```
 
 ---
 
 MIT License
-
----
-
-> **直接告訴你的 Claude Code：**
-> `幫我安裝 https://github.com/HoXuanTech/context-relay`

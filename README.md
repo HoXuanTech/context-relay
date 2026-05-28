@@ -1,117 +1,108 @@
-# Context Relay
+# context-relay
 
-> **To install via Claude Code, just say:**
-> `幫我安裝 https://github.com/HoXuanTech/context-relay`
-
-**Never lose your flow when Claude Code compacts.**
+> A `/handoff` skill for Claude Code that helps you survive long sessions.
 
 [中文說明](README.zh-TW.md)
 
 ---
 
-## The Problem: Compaction Wipes Your Work State
+## The Problem in One Sentence
 
-Claude Code's context window holds ~200k tokens. During a long session —
-refactoring across 10+ files, debugging a complex bug, working through a
-multi-step migration — the window fills up. Claude Code auto-compacts:
-summarizes the conversation and continues.
+Claude Code has a memory limit. When a session gets too long, it automatically compresses everything — and in that compression, it tends to forget the most important specifics.
 
-The problem is what gets lost.
+Not everything. It remembers the general shape of the project. But it forgets:
 
-**What Claude remembers after compaction:**
-> "You're refactoring a Next.js project."
+- The exact constant value you locked in (`STORAGE_KEYS.FAVORITES = 'recipe-favorites'` — never change this or all saved data orphans)
+- *Why* you rejected the obvious approach (`NEVER use native <dialog>` — because `::backdrop` behaves differently in Chrome vs Firefox)
+- What the actual next step is (not "continue the refactor" — specifically "add refreshToken logic to session.ts before touching /api/user")
 
-**What Claude forgets:**
-- *Why* `authMiddleware` can't be a HOC (edge runtime limitation you spent 20 minutes figuring out)
-- That `/api/user` was intentionally skipped, waiting for `session.ts`
-- Which 3 of the 7 modified files are still half-done
-- The stop condition: "don't touch `/api/auth/callback`, it's live"
-
-**The cost:** 5–15 minutes rebuilding context from memory. If you're
-tired, you rebuild it wrong. Claude re-opens files you told it to leave
-alone. It re-suggests approaches you already ruled out.
-
-Engineers work around this by pasting checkpoint notes into the chat,
-opening new tabs and re-explaining everything, or leaving
-`// TODO: Claude forgot this` comments in the code. Manual patches for
-a systemic problem.
+After a few compression cycles, Claude starts re-suggesting paths you already ruled out. It forgets constraints that took you 20 minutes to discover. The session drifts.
 
 ---
 
-## The Fix: Automatic Handoff Before Every Compaction
+## What context-relay Does
 
-Context Relay installs a `PreCompact` hook into Claude Code. Before
-every auto-compaction, it:
+**It does not fight auto-compaction. It works alongside it.**
 
-1. Reads your latest handoff file (a <50-line snapshot of your state)
-2. Opens a new terminal window automatically
-3. Starts a new Claude Code session with that snapshot pre-loaded
+Claude Code's auto-compaction is good at preserving breadth — the general picture of what you're building, what files exist, what's roughly in progress. context-relay handles the three things auto-compaction tends to lose over multiple cycles:
 
-The new session knows exactly where to pick up.
+1. **Permanent constants** — exact strings, keys, values that must never change
+2. **Never-do rules with reasons** — not just "don't do X" but *why*, including the alternative you already evaluated and rejected
+3. **Concrete next action** — specific enough to execute immediately, not just a vague direction
+
+The two work as a team:
 
 ```
-WITHOUT Context Relay
-─────────────────────────────────────────────
-[Auto-compact fires]
-→ Claude forgets everything specific
-→ You spend 5–15 min rebuilding context from memory
-→ Claude may undo decisions you already made
+Without context-relay
+──────────────────────────────────────────
+[3 compression cycles later]
+Claude: "have you considered using native <dialog> for the modal?"
+You: "...we went through this"
+────────────────────────────────────────── 5–15 min rebuilding
 
-WITH Context Relay
-─────────────────────────────────────────────
-[Auto-compact fires]
-→ Desktop notification: "Opening new window to continue work"
-→ New terminal opens automatically
-→ New Claude session starts with full handoff loaded
-→ Work continues from exactly where you left off
+With context-relay
+──────────────────────────────────────────
+[3 compression cycles later]
+Auto-compact: preserves overall project state
+Handoff: NEVER native <dialog> — ::backdrop inconsistency Chrome/Firefox
+Claude picks up exactly where you left off
 ```
 
 ---
 
-## Does It Actually Help?
+## How It Works
 
-We ran a controlled study comparing auto-compaction against Context Relay's handoff format. A realistic 2-hour engineering session was used as the test scenario, with 15 recall questions across safety rules, decision rationale, and work state.
+### 1. You write a handoff during the session
 
-**Single compaction cycle:**
+Run `/handoff` at any point. Claude writes a short structured file (target: under 35 lines) to your project:
 
-| | Auto-compact | Handoff |
-|---|:---:|:---:|
-| Recall accuracy | 60% | 67% |
+```markdown
+# Handoff - my-project - 2026-05-28 14:30
 
-A modest +7% difference. Auto-compaction is not bad.
+## 現在做到哪
+Refactoring auth middleware to work in edge runtime. modal system is done.
 
-**What happens after multiple cycles** (each cycle = context fills up again):
+## 永久常數 & 禁區
+- STORAGE_KEYS.FAVORITES = 'recipe-favorites' — renaming this orphans all saved user data
+- NEVER native <dialog> — ::backdrop and returnFocus differ between Chrome/Firefox
+- NEVER Node.js APIs in middleware — edge runtime hard block, confirmed via build error
 
+## 接下來要做什麼
+- Add refreshToken logic to session.ts
+- Run: npm test -- --filter=session
+- /api/user is blocked until session.ts is done — do not touch it yet
+
+## Background
+→ read PROJECT_CONTEXT.md for full architecture
 ```
-Recall accuracy
- 67% │  ──────────────────────────────────────  Handoff (constant)
- 60% │  ●  Round 1
-     │
- 30% │              ●  Round 3
- 27% │                             ●  Round 6
-  0% └──────────────────────────────────────────
-      1 cycle       3 cycles      6 cycles
-      (~1 hr)       (~3-4 hrs)    (~6+ hrs)
-```
 
-The handoff advantage is not in the first hour. It's in hour three.
+### 2. When auto-compaction fires, the hook takes over
 
-Auto-compaction reaches a "compaction floor" by Round 3 — the summary has been compressed so many times that only broad facts remain. Safety rule *reasons* disappear. Specific next steps collapse into "open TODOs". Causal chains ("tests didn't cover this, so the bug hid for 20 minutes") are gone entirely.
+A `PreCompact` hook runs automatically before every compression. It:
 
-The handoff, loaded fresh into each new session, stays at 67% regardless of how many times compaction has occurred.
+- Saves your latest handoff to `~/.claude/HANDOFF_CURRENT.md` (a symlink to the timestamped original — history is never overwritten)
+- Writes a small notice file: `~/.claude/COMPACTION_NOTICE.md`
+- Shows a desktop notification
+- **Does not open a new window** — auto-compaction continues normally
 
-→ [Full research methodology and data](research/STUDY.md)
+### 3. The compressed session reads the handoff
+
+After compression, Claude's very next response is triggered by a rule in `CLAUDE.md`:
+
+> If `~/.claude/COMPACTION_NOTICE.md` exists: read it, read the handoff, confirm state to the user, delete the notice file.
+
+The compressed session gets both: auto-compact's broad context coverage + handoff's precise specifics. Then the notice file is deleted so it doesn't repeat on future messages.
 
 ---
 
 ## Install
 
-**Option 1 — Let Claude Code do it:**
+**Via Claude Code (easiest):**
 
 Open Claude Code and say:
 > 幫我安裝 https://github.com/HoXuanTech/context-relay
 
-**Option 2 — Manual:**
+**Manual:**
 
 ```bash
 git clone https://github.com/HoXuanTech/context-relay ~/context-relay
@@ -123,86 +114,54 @@ bash install.sh
 
 ## Usage
 
-### 1. Run `/handoff` during sessions
+**Run `/handoff` regularly during long sessions:**
+- After finishing a meaningful chunk of work
+- When switching to a different part of the codebase
+- Any time you'd feel nervous if the session was suddenly reset
 
-The auto-handoff quality depends entirely on how recent your last
-`/handoff` is. Run it:
-- After completing a meaningful unit of work
-- Before switching tasks
-- Every 15–20 minutes during long sessions
+That's it. The hook handles everything else automatically.
 
-Handoff files are saved to:
-- `<project-root>/handoff/` — git projects
-- `~/.claude/handoff/<project-name>/` — everything else
+**Handoff files are saved to:**
+- `<project-root>/handoff/` — for git projects
+- `~/.claude/handoff/<project-name>/` — for everything else
 
-### 2. Do nothing else
-
-When auto-compaction fires, Context Relay handles it. A new window
-opens with your handoff loaded.
+History is preserved. Every `/handoff` creates a new timestamped file. `HANDOFF_CURRENT.md` is a symlink to the latest — nothing gets overwritten.
 
 ---
 
-## What a Handoff File Looks Like
+## What Goes in a Handoff (and What Doesn't)
 
-```markdown
-# Handoff - my-project - 2026-05-21 03:00
+**Write this:**
+- Permanent constants with exact values and what breaks if they change
+- Rules framed as prohibitions: `NEVER [X] — [specific reason, including the rejected alternative]`
+- The single most important next step, specific enough to run immediately
 
-## Current Goal
-Refactoring authMiddleware to support edge runtime without breaking sessions.
+**Don't write this:**
+- Everything you did this session (auto-compact covers this)
+- `.env` contents, credentials, secrets
+- Full file contents or long architecture docs — use `→ read [path]` instead
 
-## Key Decisions
-- authMiddleware can't be HOC → edge runtime bans dynamic imports; confirmed after 20 min investigation
-- /api/user skipped intentionally → depends on session.ts refreshToken, touch after that's done
+**The handoff is not a history log. It's a precision supplement.**
 
-## In Progress
-- session.ts — half-done, needs refreshToken logic
-- /api/user — blocked on session.ts (see Key Decisions)
+---
 
-## Completed Detail
-- middleware.ts, headers.ts, tokens.ts — all rewritten, tests passing, no edge runtime issues
+## Research
 
-## Safety Rules
-- Do NOT touch /api/auth/callback — it's live in production
-- No Node.js APIs anywhere in middleware (edge runtime constraint)
+Five studies were conducted comparing auto-compaction against the handoff format across different content types (engineering sessions, academic text, realistic vibe coding conversations). The key finding:
 
-## Last Actions
-- Confirmed HOC approach is blocked (edge runtime)
-- Rewrote middleware.ts, headers.ts, tokens.ts — tests passing
+> Auto-compaction and handoff are good at different things. Auto-compaction preserves breadth. Handoff preserves precision — exact constants, rejection reasons, and directional momentum. The two together outperform either alone.
 
-## Next Actions
-- Add refreshToken logic to session.ts
-- Run: npm test -- --filter=session
-- Then return to /api/user
+The failure mode without handoff is not catastrophic amnesia — it's gradual drift. Claude slowly forgets *why* decisions were made, starts re-proposing ruled-out approaches, and loses the specific next action. This compounds with each compression cycle.
 
-## Recon Notes
-- Edge runtime constraint confirmed via: next build error "Dynamic Code Evaluation not allowed"
-
-## Background
-→ read PROJECT_CONTEXT.md for full architecture
-```
-
-Completed tasks are deleted, not archived. A handoff is a snapshot of
-*right now*, not a history log. Keep it under 55 lines.
+→ [Full research data and methodology](research/RESEARCH_SUMMARY.md)
 
 ---
 
 ## Requirements
 
-- macOS or Linux
+- macOS (Linux support: partial — desktop notification won't work, rest is fine)
 - Claude Code ≥ v2.1.144
 - Python 3
-- Linux only: one of `gnome-terminal`, `konsole`, `xfce4-terminal`, `tilix`, or `xterm`
-
----
-
-## Limitations
-
-- If you haven't run `/handoff` recently, the new session opens with
-  only a minimal placeholder — the hook can't read your mind
-- The new window is an independent session; tool permissions and env
-  vars are not inherited
-- Deep architecture context belongs in project files, pointed to with
-  `→ read [path]`
 
 ---
 
@@ -211,14 +170,12 @@ Completed tasks are deleted, not archived. A handoff is a snapshot of
 ```bash
 rm ~/.claude/hooks/context-relay-pre-compact.sh
 rm -rf ~/.claude/skills/handoff/
+rm -f ~/.claude/HANDOFF_CURRENT.md
+rm -f ~/.claude/COMPACTION_NOTICE.md
 # Remove the PreCompact entry from ~/.claude/settings.json
+# Remove the Context Relay section from ~/.claude/CLAUDE.md
 ```
 
 ---
 
 MIT License
-
----
-
-> **Install via Claude Code:**
-> `幫我安裝 https://github.com/HoXuanTech/context-relay`

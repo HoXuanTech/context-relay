@@ -1,0 +1,176 @@
+{
+  "A_manual_compact": {
+    "label": "A_manual_compact",
+    "word_count": 937,
+    "total": 11,
+    "compressed_preview": "This session established the complete foundation for a vanilla JavaScript recipe collector app, deliberately avoiding any framework in favor of direct DOM manipulation and plain script tags loaded in dependency order. The project chose TheMealDB as its data source over Spoonacular, a decision driven",
+    "rows": [
+      {
+        "q": "Q1",
+        "score": 2,
+        "answer": "**Safety Rule #1:** The localStorage key `'recipe-favorites'` must never be changed and must never be referenced as a ra"
+      },
+      {
+        "q": "Q2",
+        "score": 2,
+        "answer": "**TheMealDB** was chosen over Spoonacular.\n\n**Reasons:**\n- No API key required\n- No rate-limit concerns\n- Full CORS supp"
+      },
+      {
+        "q": "Q3",
+        "score": 2,
+        "answer": "The nine-field Recipe schema has these exact keys:\n\n- `id`\n- `title`\n- `thumbnail`\n- `category`\n- `area`\n- `tags`\n- `ing"
+      },
+      {
+        "q": "Q4",
+        "score": 0,
+        "answer": "Broken thumbnail images are handled via an `onerror` handler on the `<img>` element that sets `this.src = ''` and adds a"
+      },
+      {
+        "q": "Q5",
+        "score": 2,
+        "answer": "Based on the context:\n\n- **Keyword search:** `/search.php?s=` (appended to base URL `https://www.themealdb.com/api/json/"
+      },
+      {
+        "q": "Q6",
+        "score": 0,
+        "answer": "The context does not provide endpoints specifically for fetching a **list** of categories or areas.\n\nWhat is stated is t"
+      },
+      {
+        "q": "Q7",
+        "score": 0,
+        "answer": "NOT IN CONTEXT"
+      },
+      {
+        "q": "Q8",
+        "score": 2,
+        "answer": "The five script files load in this strict order:\n\n1. `constants.js`\n2. `mapper.js`\n3. `api.js`\n4. `ui.js`\n5. `app.js`\n\nL"
+      },
+      {
+        "q": "Q9",
+        "score": 0,
+        "answer": "NOT IN CONTEXT"
+      },
+      {
+        "q": "Q10",
+        "score": 1,
+        "answer": "Based on the context, here is what is built and working at the end of S1:\n\n**API layer (`api.js`)**\n- Base URL: `https:/"
+      }
+    ]
+  },
+  "B_handoff": {
+    "label": "B_handoff",
+    "word_count": 744,
+    "total": 14,
+    "compressed_preview": "# Handoff - recipe-collector - Session 1\n\n## Current Goal\nBuild a vanilla JS recipe collector app (no frameworks) with search, card grid, and favorites — using TheMealDB as the data source.\n\n## Key Decisions\n- TheMealDB over Spoonacular → no API key, no rate limits, CORS-enabled, zero setup friction",
+    "rows": [
+      {
+        "q": "Q1",
+        "score": 2,
+        "answer": "**Safety Rule #1:** `STORAGE_KEYS.FAVORITES = 'recipe-favorites'` — this string is permanently locked; never change it, "
+      },
+      {
+        "q": "Q2",
+        "score": 2,
+        "answer": "**TheMealDB** was chosen as the recipe API.\n\nIt was selected over Spoonacular for these reasons:\n- No API key required\n-"
+      },
+      {
+        "q": "Q3",
+        "score": 2,
+        "answer": "The unified Recipe schema has these exact fields:\n\n- `id`\n- `title`\n- `thumbnail`\n- `category`\n- `area`\n- `tags`\n- `ingr"
+      },
+      {
+        "q": "Q4",
+        "score": 0,
+        "answer": "When an image fails to load, the `onerror` handler sets the `img-error` class on the image element, which applies `opaci"
+      },
+      {
+        "q": "Q5",
+        "score": 2,
+        "answer": "Based on the context:\n\n- **Search by query:** `https://www.themealdb.com/api/json/v1/1/search.php?s={query}`\n- **Lookup "
+      },
+      {
+        "q": "Q6",
+        "score": 2,
+        "answer": "From the Recon Notes:\n\n- **Categories**: `categories.php` (full URL: `https://www.themealdb.com/api/json/v1/1/categories"
+      },
+      {
+        "q": "Q7",
+        "score": 0,
+        "answer": "NOT IN CONTEXT"
+      },
+      {
+        "q": "Q8",
+        "score": 2,
+        "answer": "`constants.js → mapper.js → api.js → ui.js → app.js`"
+      },
+      {
+        "q": "Q9",
+        "score": 0,
+        "answer": "NOT IN CONTEXT"
+      },
+      {
+        "q": "Q10",
+        "score": 2,
+        "answer": "Based on the context, here is what is built and working at the end of Session 1:\n\n**Data Layer**\n- `mapMealToRecipe()` —"
+      }
+    ]
+  },
+  "C_autocompact_sim": {
+    "label": "C_autocompact_sim",
+    "word_count": 285,
+    "total": 11,
+    "compressed_preview": "**Project: Recipe Collector — Vanilla JS, no frameworks**\n\n**API: TheMealDB** (no key required)\n- Search: `https://www.themealdb.com/api/json/v1/1/search.php?s={query}` → returns **full** data\n- Lookup: `https://www.themealdb.com/api/json/v1/1/lookup.php?i={id}` → full data\n- Filter by category: `ht",
+    "rows": [
+      {
+        "q": "Q1",
+        "score": 2,
+        "answer": "**Safety Rule #1:** The localStorage key for favorites must always be `'recipe-favorites'`.\n\n- Stored as `STORAGE_KEYS.F"
+      },
+      {
+        "q": "Q2",
+        "score": 1,
+        "answer": "The API chosen was **TheMealDB**. The context states it was selected but gives **no reason or mention of alternatives co"
+      },
+      {
+        "q": "Q3",
+        "score": 1,
+        "answer": "The unified Recipe schema fields are:\n\n`id, title, thumbnail, category, area, tags, ingredients, youtubeUrl, sourceUrl`\n"
+      },
+      {
+        "q": "Q4",
+        "score": 0,
+        "answer": "Broken/missing recipe thumbnails use `onerror` on the `<img>` tag, which sets `opacity:0` and applies a gradient backgro"
+      },
+      {
+        "q": "Q5",
+        "score": 2,
+        "answer": "Search: `https://www.themealdb.com/api/json/v1/1/search.php?s={query}`\n\nLookup by ID: `https://www.themealdb.com/api/jso"
+      },
+      {
+        "q": "Q6",
+        "score": 1,
+        "answer": "Categories: `https://www.themealdb.com/api/json/v1/1/categories.php`\n\nAreas: NOT IN CONTEXT — the context mentions a fil"
+      },
+      {
+        "q": "Q7",
+        "score": 0,
+        "answer": "NOT IN CONTEXT"
+      },
+      {
+        "q": "Q8",
+        "score": 2,
+        "answer": "`constants.js` → `mapper.js` → `api.js` → `ui.js` → `app.js`"
+      },
+      {
+        "q": "Q9",
+        "score": 0,
+        "answer": "NOT IN CONTEXT"
+      },
+      {
+        "q": "Q10",
+        "score": 2,
+        "answer": "Based on the context, here is what is built and working at the end of S1:\n\n**Files completed:**\n- `constants.js` — defin"
+      }
+    ]
+  }
+}
